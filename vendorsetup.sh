@@ -19,7 +19,7 @@
 #
 
 #set -o xtrace
-FDEVICE="CM5"
+FDEVICE="LI7"
 
 # Shell compatibility detection
 if [ -n "$ZSH_VERSION" ]; then
