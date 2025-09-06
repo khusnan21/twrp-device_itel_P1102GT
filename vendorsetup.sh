@@ -19,7 +19,7 @@
 #
 
 #set -o xtrace
-FDEVICE="P1102PGT"
+FDEVICE="P1102GT"
 
 # Shell compatibility detection
 if [ -n "$ZSH_VERSION" ]; then
