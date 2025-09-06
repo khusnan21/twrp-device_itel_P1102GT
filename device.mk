@@ -6,3 +6,6 @@
 
 # Inherit from mt6789-common
 $(call inherit-product, device/transsion/mt6789-common/common.mk)
+
+PRODUCT_EXTRA_RECOVERY_KEYS += \
+    $(DEVICE_PATH)/security/releasekey
