@@ -1,105 +1,4 @@
-#
-#	This file is part of the OrangeFox Recovery Project
-# 	Copyright (C) 2024-2025 The OrangeFox Recovery Project
-#
-#	OrangeFox is free software: you can redistribute it and/or modify
-#	it under the terms of the GNU General Public License as published by
-#	the Free Software Foundation, either version 3 of the License, or
-#	any later version.
-#
-#	OrangeFox is distributed in the hope that it will be useful,
-#	but WITHOUT ANY WARRANTY; without even the implied warranty of
-#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#	GNU General Public License for more details.
-#
-# 	This software is released under GPL version 3 or any later version.
-#	See <http://www.gnu.org/licenses/>.
-#
-# 	Please maintain this if you use this script or any part of it
-#
-
-#set -o xtrace
-FDEVICE="P1102GT"
-
-# Shell compatibility detection
-if [ -n "$ZSH_VERSION" ]; then
-	# Running in ZSH
-	THIS_DEVICE="${@: -1}"
-	SCRIPT_SOURCE="${(%):-%x}"
-	IS_ZSH=1
-elif [ -n "$BASH_VERSION" ]; then
-	# Running in BASH
-	THIS_DEVICE=${BASH_ARGV[2]}
-	SCRIPT_SOURCE="$BASH_SOURCE"
-	IS_ZSH=0
-else
-	echo "ERROR! This script requires bash or zsh."
-	exit 1
-fi
-
-fetch_mt6789_common_repo() {
-	local URL=https://github.com/khusnan21/twrp-device_transsion_mt6789-common
-	local common=device/transsion/mt6789-common
-	if [ ! -d $common ]; then
-		echo "Cloning $URL ... to $common"
-		git clone $URL -b fox_12.1-trustkernel $common
-	else
-		echo "Device common repository: \"$common\" found ..."
-	fi
-}
-
-fox_get_target_device() {
-	if [ "$IS_ZSH" -eq 1 ]; then
-		# ZSH implementation
-		local chkdev=$(echo "$SCRIPT_SOURCE" | grep -w "$FDEVICE")
-		if [ -n "$chkdev" ]; then 
-			FOX_BUILD_DEVICE="$FDEVICE"
-		else
-			chkdev=$(set | grep -E "(argv|@)" | grep -w "$FDEVICE")
-			[ -n "$chkdev" ] && FOX_BUILD_DEVICE="$FDEVICE"
-		fi
-	else
-		# BASH implementation
-		local chkdev=$(echo "$SCRIPT_SOURCE" | grep -w "$FDEVICE")
-		if [ -n "$chkdev" ]; then 
-			FOX_BUILD_DEVICE="$FDEVICE"
-		else
-			chkdev=$(set | grep BASH_ARGV | grep -w "$FDEVICE")
-			[ -n "$chkdev" ] && FOX_BUILD_DEVICE="$FDEVICE"
-		fi
-	fi
-}
-
-if [ -z "$1" -a -z "$FOX_BUILD_DEVICE" ]; then
-	fox_get_target_device
-fi
-
-if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
-	if [ -z "$THIS_DEVICE" ]; then
-		if [ "$IS_ZSH" -eq 1 ]; then
-			echo "NOTE: Running in ZSH mode"
-		else
-			echo "ERROR! This script couldn't detect the device properly. Make sure you're using bash or zsh."
-			exit 1
-		fi
-	fi
-
-	# Clone to fix build on minimal manifest
-	git clone https://android.googlesource.com/platform/external/gflags/ -b android-12.1.0_r4 external/gflags
-
-	# Patches
-	RET=0
-	cd bootable/recovery
-	git apply ../../device/tecno/P1102GT/patches/0001-Change-haptics-activation-file-path.patch > /dev/null 2>&1 || RET=$?
-	cd ../../
-	if [ $RET -ne 0 ]; then
-		echo "ERROR: Patch is not applied! Maybe it's already patched?"
-	else
-		echo "OK: All patched"
-	fi
-
-	# mt6789-common
-	fetch_mt6789_common_repo
+git clone https://github.com/khusnan21/twrp-device_transsion_mt6789-common device/transsion/mt6789-common
 
 	export FOX_USE_SPECIFIC_MAGISK_ZIP=~/Magisk/Magisk-v28.1.zip
 	export FOX_VIRTUAL_AB_DEVICE=1
@@ -119,7 +18,7 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
 	export OF_DEFAULT_KEYMASTER_VERSION=4.1
 
 	# screen settings
-	export OF_SCREEN_H=2400
+	export OF_SCREEN_H=1920
 	export OF_STATUS_H=95
 	export OF_STATUS_INDENT_LEFT=48
 	export OF_STATUS_INDENT_RIGHT=48
@@ -161,19 +60,3 @@ if [ "$1" = "$FDEVICE" -o "$FOX_BUILD_DEVICE" = "$FDEVICE" ]; then
 
 	# no flashlight
 	export OF_FLASHLIGHT_ENABLE=0
-
-        # ccache
-	export USE_CCACHE=1
-	export CCACHE_EXEC=/usr/bin/ccache
-	export CCACHE_MAXSIZE="5G"
-	export CCACHE_DIR=".ccache"
-
-	if [ ! -d ${CCACHE_DIR} ]; then
-		mkdir $CCACHE_DIR
-	fi
-else
-	if [ -z "$FOX_BUILD_DEVICE" -a -z "$SCRIPT_SOURCE" ]; then
-		echo "I: This script requires bash or zsh. Not processing the $FDEVICE $(basename $0)"
-	fi
-fi
-#
