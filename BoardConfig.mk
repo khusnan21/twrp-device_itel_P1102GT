@@ -21,3 +21,5 @@ override TW_MAX_BRIGHTNESS := 5119
 
 # SELinux
 BOARD_VENDOR_SEPOLICY_DIRS += $(DEVICE_PATH)/vendor_sepolicy
+
+TARGET_OTA_CERTIFICATE := device/itel/P1102GT/security/releasekey.x509.pem
