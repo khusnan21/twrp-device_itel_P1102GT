@@ -7,6 +7,8 @@
 # Inherit from itel-P1102GT device
 $(call inherit-product, device/itel/P1102GT/device.mk)
 
+$(call inherit-product, device/itel/P1102GT/patches.mk ) 
+
 # Inherit some common TWRP stuff.
 $(call inherit-product, vendor/twrp/config/common.mk)
 
