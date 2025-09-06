@@ -18,3 +18,6 @@ TW_DEVICE_VERSION := P1102GT_by_unan
 # Brightness
 override TW_DEFAULT_BRIGHTNESS := 2047
 override TW_MAX_BRIGHTNESS := 5119
+
+# SELinux
+BOARD_VENDOR_SEPOLICY_DIRS += $(DEVICE_PATH)/vendor_sepolicy
